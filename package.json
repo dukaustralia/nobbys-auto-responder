@@ -5,6 +5,7 @@
   "repository": "zurb/foundation-emails-template",
   "main": "gulpfile.babel.js",
   "scripts": {
+    "preinstall": "yum install -y libfontconfig",
     "start": "gulp",
     "build": "gulp --production",
     "zip": "gulp zip --production",
