@@ -22,7 +22,7 @@ const EMAIL = yargs.argv.to;
 // Declar var so that both AWS and Litmus task can use it.
 var CONFIG;
 
-// Build the "dist" folder by running all of the below tasks
+// Build the "public" folder by running all of the below tasks
 gulp.task("build", gulp.series(clean, pages, sass, images, inline, process.exit(0)));
 
 // Build emails, run the server, and watch for file changes
@@ -37,10 +37,10 @@ gulp.task("mail", gulp.series("build", creds, aws, mail));
 // Build emails, then zip
 gulp.task("zip", gulp.series("build", zip));
 
-// Delete the "dist" folder
+// Delete the "public" folder
 // This happens every time a build starts
 function clean(done) {
-  rimraf("dist", done);
+  rimraf("public", done);
 }
 
 function exit() {}
@@ -59,7 +59,7 @@ function pages() {
       })
     )
     .pipe(inky())
-    .pipe(gulp.dest("dist"));
+    .pipe(gulp.dest("public"));
 }
 
 // Reset Panini's cache of layouts and partials
@@ -82,12 +82,12 @@ function sass() {
       $.if(
         PRODUCTION,
         $.uncss({
-          html: ["dist/**/*.html"]
+          html: ["public/**/*.html"]
         })
       )
     )
     .pipe($.if(!PRODUCTION, $.sourcemaps.write()))
-    .pipe(gulp.dest("dist/css"));
+    .pipe(gulp.dest("public/css"));
 }
 
 // Copy and compress images
@@ -95,21 +95,21 @@ function images() {
   return gulp
     .src(["src/assets/img/**/*", "!src/assets/img/archive/**/*"])
     .pipe($.imagemin())
-    .pipe(gulp.dest("./dist/assets/img"));
+    .pipe(gulp.dest("./public/assets/img"));
 }
 
 // Inline CSS and minify HTML
 function inline() {
   return gulp
-    .src("dist/**/*.html")
-    .pipe($.if(PRODUCTION, inliner("dist/css/app.css")))
-    .pipe(gulp.dest("dist"));
+    .src("public/**/*.html")
+    .pipe($.if(PRODUCTION, inliner("public/css/app.css")))
+    .pipe(gulp.dest("public"));
 }
 
 // Start a server with LiveReload to preview the site in
 function server(done) {
   browser.init({
-    server: "dist"
+    server: "public"
   });
   done();
 }
@@ -166,7 +166,7 @@ function aws() {
 
   return (
     gulp
-      .src("./dist/assets/img/*")
+      .src("./public/assets/img/*")
       // publisher will add Content-Length, Content-Type and headers specified above
       // If not specified it will set x-amz-acl to public-read by default
       .pipe(publisher.publish(headers))
@@ -184,10 +184,10 @@ function litmus() {
   var awsURL = !!CONFIG && !!CONFIG.aws && !!CONFIG.aws.url ? CONFIG.aws.url : false;
 
   return gulp
-    .src("dist/**/*.html")
+    .src("public/**/*.html")
     .pipe($.if(!!awsURL, $.replace(/=('|")(\/?assets\/img)/g, "=$1" + awsURL)))
     .pipe($.litmus(CONFIG.litmus))
-    .pipe(gulp.dest("dist"));
+    .pipe(gulp.dest("public"));
 }
 
 // Send email to specified email for testing. If no AWS creds then do not replace img urls.
@@ -199,15 +199,15 @@ function mail() {
   }
 
   return gulp
-    .src("dist/**/*.html")
+    .src("public/**/*.html")
     .pipe($.if(!!awsURL, $.replace(/=('|")(\/?assets\/img)/g, "=$1" + awsURL)))
     .pipe($.mail(CONFIG.mail))
-    .pipe(gulp.dest("dist"));
+    .pipe(gulp.dest("public"));
 }
 
 // Copy and compress into Zip
 function zip() {
-  var dist = "dist";
+  var public = "public";
   var ext = ".html";
 
   function getHtmlFiles(dir) {
@@ -218,10 +218,10 @@ function zip() {
     });
   }
 
-  var htmlFiles = getHtmlFiles(dist);
+  var htmlFiles = getHtmlFiles(public);
 
   var moveTasks = htmlFiles.map(function(file) {
-    var sourcePath = path.join(dist, file);
+    var sourcePath = path.join(public, file);
     var fileName = path.basename(sourcePath, ext);
 
     var moveHTML = gulp.src(sourcePath).pipe(
@@ -236,14 +236,14 @@ function zip() {
       .pipe($.htmlSrc({ selector: "img" }))
       .pipe(
         $.rename(function(path) {
-          path.dirname = fileName + path.dirname.replace("dist", "");
+          path.dirname = fileName + path.dirname.replace("public", "");
           return path;
         })
       );
 
     return merge(moveHTML, moveImages)
       .pipe($.zip(fileName + ".zip"))
-      .pipe(gulp.dest("dist"));
+      .pipe(gulp.dest("public"));
   });
 
   return merge(moveTasks);
