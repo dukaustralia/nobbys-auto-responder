@@ -207,7 +207,7 @@ function mail() {
 
 // Copy and compress into Zip
 function zip() {
-  var public = "public";
+  var pub_dir = "public";
   var ext = ".html";
 
   function getHtmlFiles(dir) {
@@ -218,10 +218,10 @@ function zip() {
     });
   }
 
-  var htmlFiles = getHtmlFiles(public);
+  var htmlFiles = getHtmlFiles(pub_dir);
 
   var moveTasks = htmlFiles.map(function(file) {
-    var sourcePath = path.join(public, file);
+    var sourcePath = path.join(pub_dir, file);
     var fileName = path.basename(sourcePath, ext);
 
     var moveHTML = gulp.src(sourcePath).pipe(
