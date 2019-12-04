@@ -23,10 +23,12 @@ const EMAIL = yargs.argv.to;
 var CONFIG;
 
 // Build the "public" folder by running all of the below tasks
-gulp.task("build", gulp.series(clean, pages, sass, images, inline, process.exit(0)));
+gulp.task("build", gulp.series(clean, pages, sass, images, inline));
 
 // Build emails, run the server, and watch for file changes
-gulp.task("default", gulp.series("build", server, watch));
+gulp.task("default", gulp.series("build"));
+
+gulp.task("start", gulp.series("build", server, watch));
 
 // Build emails, then send to litmus
 gulp.task("litmus", gulp.series("build", creds, aws, litmus));

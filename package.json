@@ -6,7 +6,7 @@
   "main": "gulpfile.babel.js",
   "scripts": {
     "preinstall": "yum install -y fontconfig",
-    "dev": "gulp",
+    "start": "gulp dev",
     "build": "gulp --production",
     "zip": "gulp zip --production",
     "litmus": "gulp litmus --production",
