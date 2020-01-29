@@ -3,12 +3,18 @@
 
 @import "template/template";
 
+.phone-number-row {
+  & :nth-child(1) {
+    padding-left: 20px;
+  }
+}
+
 .header {
   &-links {
     display: flex;
     font-size: 14px;
     display: flex;
-    justify-content: center;
+    justify-content: flex-start;
   }
 
   &-phone-icon {
